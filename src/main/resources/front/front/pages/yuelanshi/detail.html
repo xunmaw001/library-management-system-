@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>阅览室详情页</title>
+    <link rel="stylesheet" href="../../layui/css/layui.css">
+    <!-- 样式 -->
+    <link rel="stylesheet" href="../../css/style.css"/>
+    <!-- 主题（主要颜色设置） -->
+    <link rel="stylesheet" href="../../css/theme.css"/>
+    <!-- 通用的css -->
+    <link rel="stylesheet" href="../../css/common.css"/>
+    <link rel="stylesheet" href="../../xznstatic/css/bootstrap.min.css">
+</head>
+<style>
+    .particulars {
+        width: 90%;
+        background-color: #fff;
+        border-bottom: 1px dotted var(--publicMainColor);
+        padding: 10px 0;
+    }
+
+    .dataExhibition {
+        display: inline-block;
+        width: 60%;
+    }
+
+    .displayBianhao {
+        display: inline-block;
+        width: auto;
+    }
+
+    .detail-tab .layui-tab-card>.layui-tab-title .layui-this{
+        border: 2px dotted var(--publicMainColor);
+        background-color: #fff;
+        color: #000;
+    }</style>
+<body>
+
+    <div id="app">
+<div style="width: 1000px;margin: 10px auto;height: auto;">
+    <div style="border: 1px  dotted var(--publicMainColor);border-radius: 15px;margin-top:25px;height: 50px;line-height: 50px;padding-left: 15px;display: flex;justify-content: space-between;align-items: center;padding-right: 15px;">
+        <span>
+            <a style="color: #000;" href="../home/home.html">
+                首页
+            </a>/
+            <a>
+                <cite style="color: #815476;">
+                    {{title}}
+                </cite>
+            </a>
+        </span>
+    </div>
+    <div style="display: flex;margin-top: 20px;">
+        <!-- 详情介绍 -->
+        <div style="width: 50%;height: auto;">
+            <div class="particulars" style="text-align: center;font-size: 18px;">
+                <span>{{title}}</span>
+            </div>
+                  <div v-if="detail.yuelanshiTypes" class="particulars">
+                      <span class="displayBianhao">阅览室类型:</span>
+                      <span class="dataExhibition"> {{detail.yuelanshiValue}} </span>
+                  </div>
+        </div>
+        <!-- 图片 -->
+        <div style="width: 50%;height: auto;">
+            <div>
+                <div v-if="swiperList.length" v-for="(item,index) in swiperList" :key="index">
+                    <img style="width: 100%;height: 100%;object-fit:cover;" :src="baseUrl+item" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 按钮 -->
+    <div style="width: 100%;">
+        <div  style="display: flex;margin-top: 30px;justify-content: center;border-bottom:1px dotted var(--publicMainColor) ;border-top:1px dotted var(--publicMainColor) ;padding: 20px;align-items: center;">
+            <button @click="addYuelanshiOrder()" style="height:auto;"
+                    :style='{"padding":"0 10px","boxShadow":"0 0 0px rgba(255,0,0,.3)","margin":"0 5px","borderColor":"rgba(0,0,0,.3)","backgroundColor":"rgba(23, 124, 176, 1)","color":"rgba(255, 255, 255, 1)","borderRadius":"6px","borderWidth":"0","width":"auto","lineHeight":"40px","fontSize":"16px","borderStyle":"solid"}'
+                    type="button" class="layui-btn btn-submit">
+                立即预约
+            </button>
+            <!--
+             <button @click="yuelanshiYuyue()" style="height:auto;" :style='{"padding":"0 10px","boxShadow":"0 0 0px rgba(255,0,0,.3)","margin":"0 5px","borderColor":"rgba(0,0,0,.3)","backgroundColor":"rgba(23, 124, 176, 1)","color":"rgba(255, 255, 255, 1)","borderRadius":"6px","borderWidth":"0","width":"auto","lineHeight":"40px","fontSize":"16px","borderStyle":"solid"}' type="button" class="layui-btn btn-submit">
+                 立即预约
+             </button>
+        -->
+        </div>
+    </div>
+
+    <!-- 视频 -->
+
+    <!-- 座位列表 -->
+    <div style="border: 1px dotted var(--publicMainColor);border-radius: 15px;margin-top: 15px;">
+        <div style="width: 100%;">
+            <span style="font-size: 40px;float: left;margin-left: 1%;width: 25%;">座位列表</span>
+            <span style="float: right;width: 73%;margin-top: 12px;margin-right: 1%;">
+                <span style="width: 15%;">房间：</span>
+                <el-select style="width:30%" @change="zuoweiChange" v-model="buySectionNumber"
+                           placeholder="请选择">
+                    <el-option v-for="(item,index) in sectionNumberList" v-bind:key="item"
+                               :label="item" :value="item"></el-option>
+                </el-select>
+            </span>
+        </div>
+        <label
+                style="background: var(--publicMainColor);width:100%;height: 1px;margin: 10px 0px 10px"></label>
+        <div v-for="(item,index) in zuoweiNumberList " v-bind:key="index" style="width: 20%;display:inline-block;text-align: center">
+            <img @click="selectTip()" v-if="item.select" class="seat-icon" src="../../img/select.png" />
+            <img @click="selectSeat(item)" v-else-if="!item.active" class="seat-icon"
+                 src="../../img/unselect.png" />
+            <img @click="unselectSeat(item)" v-else class="seat-icon" src="../../img/selectActive.png" />
+            <span>{{item.name}}</span>
+        </div>
+    </div>
+
+    <!-- 评论 -->
+    <div class="layui-row detail-tab" style="border: none;box-shadow: none;">
+        <div class="layui-tab layui-tab-card" style="overflow: hidden;border: none; box-shadow: none;">
+            <ul class="layui-tab-title " :style='{"backgroundColor":"#fff","fontSize":"14px"}' style="color: var(--publicMainColor);border: none;">
+                <li class="layui-this">阅览室简介</li>
+                <li></li>
+            </ul>
+
+            <div class="layui-tab-content" style="border: 1px dotted var(--publicMainColor);border-radius: 15px;margin-top: 10px;margin-bottom: 50px;">
+                <div class="layui-tab-item layui-show">
+                    <div v-html="myFilters(detail.yuelanshiContent)"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>    </div>
+
+
+    <script src="../../layui/layui.js"></script>
+    <script src="../../js/vue.js"></script>
+    <!-- 引入element组件库 -->
+    <script src="../../xznstatic/js/element.min.js"></script>
+    <!-- 引入element样式 -->
+    <link rel="stylesheet" href="../../xznstatic/css/element.min.css">
+    <!-- 组件配置信息 -->
+    <script src="../../js/config.js"></script>
+    <!-- 扩展插件配置信息 -->
+    <script src="../../modules/config.js"></script>
+    <!-- 工具方法 -->
+    <script src="../../js/utils.js"></script>
+
+    <script>
+        Vue.prototype.myFilters= function (msg) {
+            if(msg != null){
+                return msg.replace(/\n/g, "<br>");
+            }else{
+                return "";
+            }
+        };
+        var vue = new Vue({
+            el: '#app',
+            data: {
+                //当前登录用户信息
+                user:{},
+                // 轮播图
+                swiperList: [],//用于当前表的图片
+                // 数据详情
+                detail: {
+                    id: 0
+                },
+                // 商品标题
+                title: '',
+                totalScore: 0,//评分
+                baseUrl:"",//路径
+                storeupFlag: 0,//收藏 [0为收藏 1已收藏]
+                //系统推荐
+                yuelanshiRecommendList: [],
+                    // 当前详情页表
+                detailTable: 'yuelanshi',
+                zuoweiNumberList: [],
+                buySectionNumber: 1,
+                sectionNumberList: [],
+            },
+            methods: {
+                //分享
+                share(){
+                    let element = createElement("http://localhost:8080/tushuguanguanlilixitong/front/index.html?url="+"./pages/yuelanshi/detail.html?id="+this.id);
+                    element.select();
+                    element.setSelectionRange(0, element.value.length);
+                    document.execCommand('copy');
+                    element.remove();
+                    layui.layer.msg('复制分享页面成功,快去分享吧!', {time: 2000,icon: 6});
+                },
+
+                jump(url) {
+                    jump(url)
+                },
+                isAuth(tablename, button) {
+                    return isFrontAuth(tablename, button)
+                },
+                //预约
+                yuelanshiYuyue(){
+                    let _this = this;
+                    // localStorage.setItem('yuelanshiId', _this.detail.id);
+                    // _this.jump("../yuelanshiOrder/add.html");
+
+                    let data={
+                        yuelanshiId:_this.detail.id,
+                        yonghuId:localStorage.getItem("userid"),
+                        yuelanshiOrderYesnoTypes:1,
+                    }
+                    // 提交数据
+                    layui.http.requestJson('yuelanshiOrder/add', 'post', data, function (res) {
+                        if(res.code == 0) {
+                            layui.layer.msg('预约成功', {
+                                time: 2000,
+                                icon: 6
+                            }, function () {
+                                _this.jump("../yuelanshiOrder/list.html");
+                            });
+                        }else{
+                            layui.layer.msg(res.msg, {
+                                time: 5000,
+                                icon: 5
+                            });
+                        }
+                    });
+                },
+                // 立即购买
+                addYuelanshiOrder() {
+        <!-- 座位 -->
+                    //座位list
+                    let activeZuoweiList = [];
+                    for (let i = 0; i < this.zuoweiNumberList.length; i++) {
+                        if (this.zuoweiNumberList[i].active) {
+                            activeZuoweiList.push(this.zuoweiNumberList[i].name.replace('号', ''));
+                        }
+                    }
+                    if (activeZuoweiList.length == 0) {
+                        layer.msg(`请选择要预定的座位`, {
+                            time: 2000,
+                            icon: 5
+                        });
+                        return false;
+                    }
+                    localStorage.setItem("activeZuoweiList",activeZuoweiList);//座位list
+                    localStorage.setItem("buySectionNumber",this.buySectionNumber);//购买房间
+                    localStorage.setItem("yuelanshiId",this.detail.id);
+                    jump('../yuelanshiOrder/add.html');
+                },
+
+    <!-- 座位 -->
+		        // 选座座位
+                selectSeat(item) {
+                    item.active = true;
+                },
+                // 取消选择座位
+                unselectSeat(item) {
+                    item.active = false;
+                },
+                // 提示该座位已经被选择了
+                selectTip() {
+                    layer.msg(`该座位已被预定`, {
+                        time: 2000,
+                        icon: 5
+                    });
+                },
+                zuoweiChange() {
+                    let _this = this;
+                    if(layui.jquery.type(this.buyZuoweiTime) === "date"){//如果类型是日期的话，要格式化成字符串， 否则后台没法查询
+                        _this.buyZuoweiTime =layui.util.toDateString(this.buyZuoweiTime, 'yyyy-MM-dd');
+                    }
+                    layui.http.request(`yuelanshiOrder/list`, 'get', {
+                        page: 1,
+                        limit: 100,
+                        yuelanshiId: vue.detail.id,
+                        yuelanshiOrderDelete: 1,
+                        buySectionNumberStart: _this.buySectionNumber,
+                        buySectionNumberEnd: _this.buySectionNumber,
+                    }, function (res) {
+                        //生成默认座位
+                        _this.zuoweiNumberList = [];
+                        for (let i = 1; i <= _this.detail.zuoweiNumber; i++) {
+                            _this.zuoweiNumberList.push({
+                                name: `${i}号`,
+                                select: false,
+                                active: false
+                            });
+                        }
+                        //生成座位被使用
+                        if (res.data.list.length > 0) {
+                            res.data.list.forEach(element => {
+                                if (element.buyZuoweiNumber != null) {
+                                    for (let i = 0; i < element.buyZuoweiNumber.split(',').length; i++) {
+                                        _this.zuoweiNumberList[element.buyZuoweiNumber.split(',')[i] - 1].select = true;
+                                    }
+                                }
+                            });
+                        }
+                    });
+                },
+            }
+        });
+
+        layui.use(['layer', 'form', 'element', 'carousel', 'http', 'jquery', 'laypage', 'util'], function () {
+            var layer = layui.layer;
+            var util = layui.util;
+            var element = layui.element;
+            var form = layui.form;
+            var carousel = layui.carousel;
+            var http = layui.http;
+            var jquery = layui.jquery;
+            var laypage = layui.laypage;
+            vue.baseUrl = http.baseurl
+
+            localStorage.setItem("goUtl","./pages/yuelanshi/detail.html?id="+ http.getParam('id'))
+
+            var limit = 10;
+
+            let table = localStorage.getItem("userTable");
+            if(table){
+                http.request(table+"/session", 'get', {}, function (data) {
+                    vue.user = data.data;
+                });
+            }
+
+            // 数据ID
+            var id = http.getParam('id');
+            vue.detail.id = id;
+            // 数据信息
+            http.request(`${vue.detailTable}/detail/` + id, 'get', {}, function (res) {
+                // 详情信息
+                vue.detail = res.data;
+                vue.title = vue.detail.yuelanshiName;
+                vue.detail.yuelanshiContent = vue.detail.yuelanshiContent.replaceAll("src=\"upload/","src=\""+vue.baseUrl+"upload/");
+                // 轮播图片
+                vue.swiperList = vue.detail.yuelanshiPhoto ? vue.detail.yuelanshiPhoto.split(",") : [];
+                // 轮播图
+                vue.$nextTick(() => {
+                    carousel.render({
+                        elem: '#swiper',
+                        width: '420px',
+                        height: '400px',
+                        arrow: 'hover',
+                        anim: 'default',
+                        autoplay: 'true',
+                        interval: '3000',
+                        indicator: 'inside'
+                    });
+                });
+
+                <!-- 车厢初始化 -->
+                for (let i = 1; i <= vue.detail.sectionNumber; i++) {
+                    vue.sectionNumberList.push(i);
+                }
+                <!-- 座位初始化 -->
+                vue.zuoweiChange();
+            });
+
+
+            // 系统推荐
+            http.request(`yuelanshi/gexingtuijian`, 'get', {
+                page: 1,
+                limit: 5,
+                yuelanshiTypes: vue.detail.yuelanshiTypes,
+                yuelanshiDelete: 1,
+            }, function (res) {
+                vue.yuelanshiRecommendList = res.data.list;
+            });
+
+        });
+    </script>
+</body>
+</html>

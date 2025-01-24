@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.YuelanshiDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.yuelanshi_name as yuelanshiName
+        ,a.yuelanshi_photo as yuelanshiPhoto
+        ,a.yuelanshi_types as yuelanshiTypes
+        ,a.section_number as sectionNumber
+        ,a.zuowei_number as zuoweiNumber
+        ,a.yuelanshi_delete as yuelanshiDelete
+        ,a.yuelanshi_content as yuelanshiContent
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.YuelanshiView" >
+        SELECT
+        <include refid="Base_Column_List" />
+        <!-- 级联表的字段 -->
+
+        FROM yuelanshi  a
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.yuelanshiName != '' and params.yuelanshiName != null and params.yuelanshiName != 'null' ">
+                and a.yuelanshi_name like CONCAT('%',#{params.yuelanshiName},'%')
+            </if>
+            <if test="params.yuelanshiTypes != null and params.yuelanshiTypes != ''">
+                and a.yuelanshi_types = #{params.yuelanshiTypes}
+            </if>
+            <if test="params.sectionNumberStart != null and params.sectionNumberStart != ''">
+                <![CDATA[  and a.section_number >= #{params.sectionNumberStart}   ]]>
+            </if>
+            <if test="params.sectionNumberEnd != null and params.sectionNumberEnd != ''">
+                <![CDATA[  and a.section_number <= #{params.sectionNumberEnd}   ]]>
+            </if>
+             <if test="params.sectionNumber != null and params.sectionNumber != ''">
+                and a.section_number = #{params.sectionNumber}
+             </if>
+            <if test="params.zuoweiNumberStart != null and params.zuoweiNumberStart != ''">
+                <![CDATA[  and a.zuowei_number >= #{params.zuoweiNumberStart}   ]]>
+            </if>
+            <if test="params.zuoweiNumberEnd != null and params.zuoweiNumberEnd != ''">
+                <![CDATA[  and a.zuowei_number <= #{params.zuoweiNumberEnd}   ]]>
+            </if>
+             <if test="params.zuoweiNumber != null and params.zuoweiNumber != ''">
+                and a.zuowei_number = #{params.zuoweiNumber}
+             </if>
+            <if test="params.yuelanshiDeleteStart != null and params.yuelanshiDeleteStart != ''">
+                <![CDATA[  and a.yuelanshi_delete >= #{params.yuelanshiDeleteStart}   ]]>
+            </if>
+            <if test="params.yuelanshiDeleteEnd != null and params.yuelanshiDeleteEnd != ''">
+                <![CDATA[  and a.yuelanshi_delete <= #{params.yuelanshiDeleteEnd}   ]]>
+            </if>
+             <if test="params.yuelanshiDelete != null and params.yuelanshiDelete != ''">
+                and a.yuelanshi_delete = #{params.yuelanshiDelete}
+             </if>
+            <if test=" params.yuelanshiContent != '' and params.yuelanshiContent != null and params.yuelanshiContent != 'null' ">
+                and a.yuelanshi_content like CONCAT('%',#{params.yuelanshiContent},'%')
+            </if>
+
+        </where>
+        order by a.${params.sort} ${params.order}
+    </select>
+
+</mapper>

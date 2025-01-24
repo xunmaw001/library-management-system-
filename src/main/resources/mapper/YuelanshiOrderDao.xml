@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.YuelanshiOrderDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.yuelanshi_order_uuid_number as yuelanshiOrderUuidNumber
+        ,a.yuelanshi_id as yuelanshiId
+        ,a.yonghu_id as yonghuId
+        ,a.yuelanshi_order_true_price as yuelanshiOrderTruePrice
+        ,a.yuelanshi_order_types as yuelanshiOrderTypes
+        ,a.buy_section_number as buySectionNumber
+        ,a.buy_zuowei_number as buyZuoweiNumber
+        ,a.buy_yuelanshi_time as buyYuelanshiTime
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.YuelanshiOrderView" >
+        SELECT
+        <include refid="Base_Column_List" />
+        <!-- 级联表的字段 -->
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_email as yonghuEmail
+        ,yuelanshi.yuelanshi_name as yuelanshiName
+        ,yuelanshi.yuelanshi_photo as yuelanshiPhoto
+        ,yuelanshi.yuelanshi_types as yuelanshiTypes
+        ,yuelanshi.section_number as sectionNumber
+        ,yuelanshi.zuowei_number as zuoweiNumber
+        ,yuelanshi.yuelanshi_delete as yuelanshiDelete
+        ,yuelanshi.yuelanshi_content as yuelanshiContent
+
+        FROM yuelanshi_order  a
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+        left JOIN yuelanshi yuelanshi ON a.yuelanshi_id = yuelanshi.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.yuelanshiOrderUuidNumber != '' and params.yuelanshiOrderUuidNumber != null and params.yuelanshiOrderUuidNumber != 'null' ">
+                and a.yuelanshi_order_uuid_number like CONCAT('%',#{params.yuelanshiOrderUuidNumber},'%')
+            </if>
+            <if test="params.yuelanshiId != null and params.yuelanshiId != ''">
+                and (
+                    a.yuelanshi_id = #{params.yuelanshiId}
+                )
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test="params.yuelanshiOrderTruePriceStart != null ">
+                <![CDATA[  and a.yuelanshi_order_true_price >= #{params.yuelanshiOrderTruePriceStart}   ]]>
+            </if>
+            <if test="params.yuelanshiOrderTruePriceEnd != null ">
+                <![CDATA[  and a.yuelanshi_order_true_price <= #{params.yuelanshiOrderTruePriceEnd}   ]]>
+            </if>
+            <if test="params.yuelanshiOrderTypes != null and params.yuelanshiOrderTypes != ''">
+                and a.yuelanshi_order_types = #{params.yuelanshiOrderTypes}
+            </if>
+            <if test="params.buySectionNumberStart != null and params.buySectionNumberStart != ''">
+                <![CDATA[  and a.buy_section_number >= #{params.buySectionNumberStart}   ]]>
+            </if>
+            <if test="params.buySectionNumberEnd != null and params.buySectionNumberEnd != ''">
+                <![CDATA[  and a.buy_section_number <= #{params.buySectionNumberEnd}   ]]>
+            </if>
+             <if test="params.buySectionNumber != null and params.buySectionNumber != ''">
+                and a.buy_section_number = #{params.buySectionNumber}
+             </if>
+            <if test=" params.buyZuoweiNumber != '' and params.buyZuoweiNumber != null and params.buyZuoweiNumber != 'null' ">
+                and a.buy_zuowei_number like CONCAT('%',#{params.buyZuoweiNumber},'%')
+            </if>
+            <if test=" params.buyYuelanshiTimeStart != '' and params.buyYuelanshiTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.buy_yuelanshi_time) >= UNIX_TIMESTAMP(#{params.buyYuelanshiTimeStart}) ]]>
+            </if>
+            <if test=" params.buyYuelanshiTimeEnd != '' and params.buyYuelanshiTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.buy_yuelanshi_time) <= UNIX_TIMESTAMP(#{params.buyYuelanshiTimeEnd}) ]]>
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+                <!-- 判断阅览室的id不为空 -->
+            <if test=" params.yuelanshiIdNotNull != '' and params.yuelanshiIdNotNull != null and params.yuelanshiIdNotNull != 'null' ">
+                and a.yuelanshi_id IS NOT NULL
+            </if>
+            <if test=" params.yuelanshiName != '' and params.yuelanshiName != null and params.yuelanshiName != 'null' ">
+                and yuelanshi.yuelanshi_name like CONCAT('%',#{params.yuelanshiName},'%')
+            </if>
+            <if test="params.yuelanshiTypes != null  and params.yuelanshiTypes != ''">
+                and yuelanshi.yuelanshi_types = #{params.yuelanshiTypes}
+            </if>
+
+            <if test="params.sectionNumberStart != null  and params.sectionNumberStart != '' ">
+                <![CDATA[  and yuelanshi.section_number >= #{params.sectionNumberStart}   ]]>
+            </if>
+            <if test="params.sectionNumberEnd != null  and params.sectionNumberEnd != '' ">
+                <![CDATA[  and yuelanshi.section_number <= #{params.sectionNumberEnd}   ]]>
+            </if>
+            <if test="params.sectionNumber != null  and params.sectionNumber != '' ">
+                and yuelanshi.section_number = #{params.sectionNumber}
+            </if>
+            <if test="params.zuoweiNumberStart != null  and params.zuoweiNumberStart != '' ">
+                <![CDATA[  and yuelanshi.zuowei_number >= #{params.zuoweiNumberStart}   ]]>
+            </if>
+            <if test="params.zuoweiNumberEnd != null  and params.zuoweiNumberEnd != '' ">
+                <![CDATA[  and yuelanshi.zuowei_number <= #{params.zuoweiNumberEnd}   ]]>
+            </if>
+            <if test="params.zuoweiNumber != null  and params.zuoweiNumber != '' ">
+                and yuelanshi.zuowei_number = #{params.zuoweiNumber}
+            </if>
+            <if test="params.yuelanshiDeleteStart != null  and params.yuelanshiDeleteStart != '' ">
+                <![CDATA[  and yuelanshi.yuelanshi_delete >= #{params.yuelanshiDeleteStart}   ]]>
+            </if>
+            <if test="params.yuelanshiDeleteEnd != null  and params.yuelanshiDeleteEnd != '' ">
+                <![CDATA[  and yuelanshi.yuelanshi_delete <= #{params.yuelanshiDeleteEnd}   ]]>
+            </if>
+            <if test="params.yuelanshiDelete != null  and params.yuelanshiDelete != '' ">
+                and yuelanshi.yuelanshi_delete = #{params.yuelanshiDelete}
+            </if>
+            <if test=" params.yuelanshiContent != '' and params.yuelanshiContent != null and params.yuelanshiContent != 'null' ">
+                and yuelanshi.yuelanshi_content like CONCAT('%',#{params.yuelanshiContent},'%')
+            </if>
+        </where>
+        order by a.${params.sort} ${params.order}
+    </select>
+
+</mapper>
